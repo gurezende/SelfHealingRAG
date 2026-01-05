@@ -2,6 +2,7 @@ import numpy as np
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
 from fastembed import TextEmbedding
+from fastembed.rerank.cross_encoder import TextCrossEncoder
 
 
 # Text
@@ -103,19 +104,51 @@ def get_doc_answer(docs, query: str, k: int = 2) -> list[str]:
     using="embedding",
     query=query_embedded,
     with_payload=True,
-    limit=3)
+    limit=k)
 
     description_hits = []
     for i, hit in enumerate(initial_retrieval.points):
-        print(f'Result number {i+1} is \n"{hit.payload["description"]}\"')
+        # print(f'Result number {i+1} is \n"{hit.payload["description"]}\"')
         description_hits.append(hit.payload["description"])
 
     return description_hits
 
 
-# if __name__ == "__main__":
-    
-#     docs = embed_docs()
+def rerank(query, retrieved_docs):
 
-#     get_doc_answer(docs=docs, 
-#                    query="What is a transformer models used for?")
+    # Create Reranker
+    reranker = TextCrossEncoder(model_name='jinaai/jina-reranker-v2-base-multilingual')
+    
+    # Return scores between query and each document
+    new_scores = list(
+    reranker.rerank(query, retrieved_docs)
+    )  
+    
+    # Sort them in order of relevance defined by reranker
+    ranking = [ (i, score) for i, score in enumerate(new_scores) ]
+    ranking.sort(
+        key=lambda x: x[1], reverse=True
+    )  
+
+    # Print reranked results
+    description_hits = []
+    for i, rank in enumerate(ranking):
+        print(f'''Reranked result number {i+1} is \"{retrieved_docs[rank[0]]}\"''')
+        description_hits.append(retrieved_docs[rank[0]])
+
+    return description_hits
+
+
+
+if __name__ == "__main__":
+    
+    query= "Tell me one advantage of transformers"
+
+    embedded_docs = embed_docs()
+
+    retrieved_docs = get_doc_answer(docs=embedded_docs, query=query, k=5)
+    
+    print('\n ---')
+    print('Reranked results:\n')
+
+    rerank(query=query, retrieved_docs=retrieved_docs)

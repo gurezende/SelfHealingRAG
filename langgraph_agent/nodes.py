@@ -12,43 +12,85 @@ from retrieve_docs import *
 class RAGState(TypedDict):
     query: str
     retrieved_docs: List[str]
+    retrieval_mode: str
+    retrieval_budget: int
     answer: str
     score: float
+    failure_reason: str
     retry_count: int
     max_retries: int
 
 # One node retrieves
 def retrieve_node(state):
     query = state["query"]
+    budget = state["retrieval_budget"]
+    mode = state["retrieval_mode"]
     
     # Embed Documents
     docs = embed_docs()
 
     # Get Answer
-    results = get_doc_answer(docs=docs, 
-                   query="What is a transformer models used for?")
+    results = get_doc_answer(docs=docs,
+                             query=query,
+                             k=budget)
+    
+    # Read retrieval model
+    if state["retrieval_mode"] == "dense_rerank":
+        results = rerank(query=query, retrieved_docs=results)
     
     return {"retrieved_docs": results}
-    
-
+ 
 
 # One node generates
 def generate_node(state):
     print('Generating answer...')
     return {"answer": "some text"}
 
-# One node evaluates
-def score_node(state):
-    print('Scoring...')
-    return {"score": state["score"]}
 
-# One node for retry decision
-def retry_node(state: RAGState):
+# One node evaluates
+def score_node(state: RAGState):
+    score = state["score"] 
+
+    if score >= 0.5:
+        return {"score": score, "failure_reason": ""}
+
+    docs = state["retrieved_docs"]
+    answer = state["answer"]
+
+    # Very simple heuristic for now
+    if len(docs) == 0:
+        failure = "missing_context"
+    else:
+        failure = "irrelevant_docs"
+
+    return {
+        "score": score,
+        "failure_reason": failure
+    }
+
+# One node for decision retry or end
+def should_retry(state):
     if state["score"] < 0.5 and state["retry_count"] < state["max_retries"]:
         return "retry"
     return "end"
 
+
+# One node for retry decision
+def retry_node(state: RAGState):
+    failure = state["failure_reason"]
+
+    if failure == "missing_context":
+        return {
+            "retrieval_budget": state["retrieval_budget"] + 3,
+            "retrieval_mode": "dense_rerank"
+        }
+
+    if failure == "irrelevant_docs":
+        return {"retrieval_mode": "dense_rerank"}
+
+    return {}
+
+
 # One node for retry count
 def retry_count_node(state):
     return {"retry_count": state["retry_count"] + 1}
-

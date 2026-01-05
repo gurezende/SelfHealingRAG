@@ -13,7 +13,7 @@ def build_graph():
     builder.add_node("generate", generate_node)
     builder.add_node("score", score_node)
     builder.add_node("retry", retry_node)
-    builder.add_node("retry_count", retry_count_node)
+    builder.add_node("increment_retry", retry_count_node)
 
     # Define the flow
     builder.set_entry_point("retrieve")
@@ -22,14 +22,16 @@ def build_graph():
     
     # Conditional Edge: if score < 0.5 and retry_count < 3, then retry
     builder.add_conditional_edges(
-        "score", retry_node,
+        "score", should_retry,
         {
-            "retry": "retry_count",
+            "retry": "retry",
             "end": END
         }
 )
 
-    builder.add_edge("retry_count", "retrieve")
+    builder.add_edge("retry", "increment_retry")
+    builder.add_edge("increment_retry", "retrieve")
+    
 
     # Compile the graph
     return builder.compile()
@@ -43,12 +45,16 @@ display(Image(graph.get_graph().draw_mermaid_png()))
 # %%
 
 graph.invoke({
-    "query": "what is a transformer?",
+    "query": "Tell me one advantage of transformers",
     "retrieved_docs": [],
+    "retrieval_mode": "original",
+    "retrieval_budget": 4,
+    "failure_reason": "",
     "answer": "",
-    "score": 0.5,
+    "score": 0.4,
     "retry_count": 1,
     "max_retries": 2
 })
+
 
 # %%
