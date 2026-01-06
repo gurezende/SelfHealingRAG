@@ -1,8 +1,15 @@
+import os
 import numpy as np
+import json
+import openai
+from openai import OpenAI
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
 from fastembed import TextEmbedding
 from fastembed.rerank.cross_encoder import TextCrossEncoder
+from dotenv import load_dotenv
+load_dotenv()
+
 
 
 # Text
@@ -133,11 +140,45 @@ def rerank(query, retrieved_docs):
     # Print reranked results
     description_hits = []
     for i, rank in enumerate(ranking):
-        print(f'''Reranked result number {i+1} is \"{retrieved_docs[rank[0]]}\"''')
+        # print(f'''Reranked result number {i+1} is \"{retrieved_docs[rank[0]]}\"''')
         description_hits.append(retrieved_docs[rank[0]])
 
     return description_hits
 
+
+# LLM-as-a-Judge Prompt
+llm_judge_prompt = """
+You are an expert evaluator of Retrieval-Augmented Generation systems.
+
+User question:
+{query}
+
+Retrieved documents:
+{retrieved_docs}
+
+Generated answer:
+{answer}
+
+Evaluate the answer using the retrieved documents.
+
+Answer the following in JSON:
+{{
+  "relevant_docs": true | false,
+  "sufficient_context": true | false,
+  "score": number between 0 and 1
+}}
+
+Guidelines:
+- relevant_docs = false if documents do not address the user question
+- sufficient_context = false if documents are related but incomplete
+- score should reflect overall answer quality and faithfulness
+"""
+
+# Function LLM-as-a-Judge
+def llm_judge(query, retrieved_docs, answer):
+    prompt = llm_judge_prompt.format(query=query, retrieved_docs=retrieved_docs, answer=answer)
+    response = openai.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+    return json.loads(response.choices[0].message.content)
 
 
 if __name__ == "__main__":
@@ -149,6 +190,26 @@ if __name__ == "__main__":
     retrieved_docs = get_doc_answer(docs=embedded_docs, query=query, k=5)
     
     print('\n ---')
-    print('Reranked results:\n')
+    print('Reranking results...\n')
 
-    rerank(query=query, retrieved_docs=retrieved_docs)
+    final_docs = rerank(query=query, retrieved_docs=retrieved_docs)
+    print('\n Final Docs---')
+    print(final_docs)
+
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+    answer1 = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "developer", "content": "Use the following documents to answer the user question: " + str(final_docs)},
+            {"role": "user", "content": query}
+        ]
+        )
+
+    print("LLM Answer:")
+    print(answer1.choices[0].message.content, "\n")
+
+    print("LLM Judge:")
+    print(llm_judge(query=query, 
+              retrieved_docs=final_docs, 
+              answer=answer1.choices[0].message.content))

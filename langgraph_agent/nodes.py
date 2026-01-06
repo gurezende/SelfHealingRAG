@@ -19,6 +19,7 @@ class RAGState(TypedDict):
     failure_reason: str
     retry_count: int
     max_retries: int
+    healing_trace: List[str]
 
 # One node retrieves
 def retrieve_node(state):
@@ -38,7 +39,8 @@ def retrieve_node(state):
     if state["retrieval_mode"] == "dense_rerank":
         results = rerank(query=query, retrieved_docs=results)
     
-    return {"retrieved_docs": results}
+    return {"retrieved_docs": results,
+            "healing_trace": state["healing_trace"]}
  
 
 # One node generates
@@ -78,15 +80,21 @@ def should_retry(state):
 # One node for retry decision
 def retry_node(state: RAGState):
     failure = state["failure_reason"]
+    trace = state.get("healing_trace", [])
 
     if failure == "missing_context":
+        trace.append("Missing context → increased retrieval budget by 3 + rerank")
         return {
             "retrieval_budget": state["retrieval_budget"] + 3,
-            "retrieval_mode": "dense_rerank"
+            "retrieval_mode": "dense_rerank",
+            "healing_trace": trace
         }
 
     if failure == "irrelevant_docs":
-        return {"retrieval_mode": "dense_rerank"}
+        trace.append("Irrelevant docs → enabled rerank + increased retrieval budget by 2")
+        return {"retrieval_budget": state["retrieval_budget"] + 2,
+                "retrieval_mode": "dense_rerank",
+                "healing_trace": trace}
 
     return {}
 

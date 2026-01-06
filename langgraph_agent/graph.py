@@ -45,13 +45,14 @@ display(Image(graph.get_graph().draw_mermaid_png()))
 # %%
 
 graph.invoke({
-    "query": "Tell me one advantage of transformers",
+    "query": "Advantages of transformers",
     "retrieved_docs": [],
     "retrieval_mode": "original",
-    "retrieval_budget": 4,
+    "retrieval_budget": 2,
     "failure_reason": "",
+    "healing_trace": [],
     "answer": "",
-    "score": 0.4,
+    "score": 0.5,
     "retry_count": 1,
     "max_retries": 2
 })
