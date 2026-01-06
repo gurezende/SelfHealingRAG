@@ -2,6 +2,7 @@
 from retrieve_docs import get_doc_answer, embed_docs
 from nodes import *
 from langgraph.graph import StateGraph, END
+from document_loader import load_document
 
 def build_graph():
 
@@ -44,8 +45,11 @@ display(Image(graph.get_graph().draw_mermaid_png()))
 
 # %%
 
+# Load document
+documents = load_document("C:/Users/gurez/OneDrive/Área de Trabalho/Guide_AB_Testing.pdf")
+
 graph.invoke({
-    "query": "When should I use transformers?",
+    "query": "What is an A/B Test?",
     "retrieved_docs": [],
     "retrieval_mode": "original",
     "retrieval_budget": 2,

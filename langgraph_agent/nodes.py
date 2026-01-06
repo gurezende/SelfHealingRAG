@@ -84,13 +84,9 @@ def score_node(state: RAGState):
     elif not sufficient:
         failure_reason = "missing_context"
     else:
-        failure_reason = ""
+        failure_reason = "none"
 
-    # Return evaluation
-    if score >= 0.7:
-        return {"score": score, "failure_reason": failure_reason}
-
-    # If score is less than 0.7, retry
+    # Return score and failure reason
     return {
         "score": score,
         "failure_reason": failure_reason
@@ -98,7 +94,7 @@ def score_node(state: RAGState):
 
 # One node for decision retry or end
 def should_retry(state):
-    if state["score"] < 0.7 and state["retry_count"] < state["max_retries"]:
+    if state["score"] < 0.8 and state["retry_count"] < state["max_retries"]:
         return "retry"
     return "end"
 
@@ -122,7 +118,8 @@ def retry_node(state: RAGState):
                 "retrieval_mode": "dense_rerank",
                 "healing_trace": trace}
 
-    return {}
+    trace.append("No healing needed")
+    return {"healing_trace": trace}
 
 
 # One node for retry count
