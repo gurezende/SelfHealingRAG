@@ -176,6 +176,17 @@ Guidelines:
 
 # Function LLM-as-a-Judge
 def llm_judge(query, retrieved_docs, answer):
+    """
+    Evaluate the answer using the retrieved documents.
+
+    Args:
+        query (str): The user query.
+        retrieved_docs (list[str]): The retrieved documents.
+        answer (str): The generated answer.
+
+    Returns:
+        dict: A dictionary containing the evaluation results.
+    """
     prompt = llm_judge_prompt.format(query=query, retrieved_docs=retrieved_docs, answer=answer)
     response = openai.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
     return json.loads(response.choices[0].message.content)
@@ -183,7 +194,7 @@ def llm_judge(query, retrieved_docs, answer):
 
 if __name__ == "__main__":
     
-    query= "Tell me one advantage of transformers"
+    query= "Advantages of transformers"
 
     embedded_docs = embed_docs()
 
@@ -198,18 +209,18 @@ if __name__ == "__main__":
 
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    answer1 = client.chat.completions.create(
+    ai_answer = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "developer", "content": "Use the following documents to answer the user question: " + str(final_docs)},
+            {"role": "developer", "content": "Use the following documents to answer the user question: " + str(final_docs) + "If the answer cannot be found in the documents, respond with 'I didn't find any relevant documents.'"},
             {"role": "user", "content": query}
         ]
         )
 
     print("LLM Answer:")
-    print(answer1.choices[0].message.content, "\n")
+    print(ai_answer.choices[0].message.content, "\n")
 
     print("LLM Judge:")
     print(llm_judge(query=query, 
               retrieved_docs=final_docs, 
-              answer=answer1.choices[0].message.content))
+              answer=ai_answer.choices[0].message.content))

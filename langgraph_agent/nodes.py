@@ -46,33 +46,59 @@ def retrieve_node(state):
 # One node generates
 def generate_node(state):
     print('Generating answer...')
-    return {"answer": "some text"}
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+    ai_answer = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "developer", "content": "Use the following documents to answer the user question: " + str(state["retrieved_docs"]) + "If the answer cannot be found in the documents, respond with 'I didn't find any relevant documents.'"},
+            {"role": "user", "content": state["query"]}
+        ]
+        )
+    
+    # Return AI generated answer
+    print('Answer generated:')
+    print(ai_answer.choices[0].message.content)
+    return {"answer": ai_answer.choices[0].message.content}
 
 
 # One node evaluates
 def score_node(state: RAGState):
-    score = state["score"] 
+    
+    # Evaluate the generated answer
+    judge = llm_judge(query=state["query"], 
+                      retrieved_docs=state["retrieved_docs"], 
+                      answer=state["answer"])
+    
+    score = judge["score"]
+    relevant = judge["relevant_docs"]
+    sufficient = judge["sufficient_context"]
 
-    if score >= 0.5:
-        return {"score": score, "failure_reason": ""}
+    print(f"Score: {score}")
+    print(f"Relevant: {relevant}")
+    print(f"Sufficient: {sufficient}")
 
-    docs = state["retrieved_docs"]
-    answer = state["answer"]
-
-    # Very simple heuristic for now
-    if len(docs) == 0:
-        failure = "missing_context"
+    # Determine failure reason
+    if not relevant:
+        failure_reason = "irrelevant_docs"
+    elif not sufficient:
+        failure_reason = "missing_context"
     else:
-        failure = "irrelevant_docs"
+        failure_reason = ""
 
+    # Return evaluation
+    if score >= 0.7:
+        return {"score": score, "failure_reason": failure_reason}
+
+    # If score is less than 0.7, retry
     return {
         "score": score,
-        "failure_reason": failure
+        "failure_reason": failure_reason
     }
 
 # One node for decision retry or end
 def should_retry(state):
-    if state["score"] < 0.5 and state["retry_count"] < state["max_retries"]:
+    if state["score"] < 0.7 and state["retry_count"] < state["max_retries"]:
         return "retry"
     return "end"
 
