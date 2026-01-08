@@ -11,6 +11,7 @@ import streamlit as st
 
 # Define the state schema (just a dictionary for now)
 class RAGState(TypedDict):
+    text: List[str]
     query: str
     retrieved_docs: List[str]
     retrieval_mode: str
@@ -27,9 +28,10 @@ def retrieve_node(state):
     query = state["query"]
     budget = state["retrieval_budget"]
     mode = state["retrieval_mode"]
+    text = state["text"]
     
     # Embed Documents
-    docs = embed_docs()
+    docs = embed_docs(text)
 
     # Get Answer
     results = get_doc_answer(docs=docs,
@@ -75,9 +77,9 @@ def score_node(state: RAGState):
     relevant = judge["relevant_docs"]
     sufficient = judge["sufficient_context"]
 
-    st.caption(f"Score: {score}")
-    st.caption(f"Relevant: {relevant}")
-    st.caption(f"Sufficient: {sufficient}")
+    st.caption(f"* Score: {score}")
+    st.caption(f"* Relevant: {relevant}")
+    st.caption(f"* Sufficient: {sufficient}")
 
     # Determine failure reason
     if not relevant:
@@ -86,6 +88,9 @@ def score_node(state: RAGState):
         failure_reason = "missing_context"
     else:
         failure_reason = "none"
+
+    # Print failure reason
+    st.caption(f"Failure reason: {failure_reason}")
 
     # Return score and failure reason
     return {
@@ -107,6 +112,9 @@ def retry_node(state: RAGState):
 
     if failure == "missing_context":
         trace.append("Missing context → increased retrieval budget by 3 + rerank")
+        trace_for_log = str(trace[-1])
+        st.caption(f"Healing trace: {trace_for_log}")
+
         return {
             "retrieval_budget": state["retrieval_budget"] + 3,
             "retrieval_mode": "dense_rerank",
@@ -115,11 +123,19 @@ def retry_node(state: RAGState):
 
     if failure == "irrelevant_docs":
         trace.append("Irrelevant docs → enabled rerank + increased retrieval budget by 2")
+        trace_for_log = str(trace[-1])
+        st.caption(f"Healing trace: {trace_for_log}")
+
         return {"retrieval_budget": state["retrieval_budget"] + 2,
                 "retrieval_mode": "dense_rerank",
                 "healing_trace": trace}
 
     trace.append("No healing needed")
+    
+    # Print and return
+    trace_for_log = str(trace[-1])
+    st.caption(f"Healing trace: {trace_for_log}")
+    
     return {"healing_trace": trace}
 
 

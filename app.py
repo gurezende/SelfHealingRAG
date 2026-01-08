@@ -43,8 +43,8 @@ with st.sidebar:
             file.write(uploaded_file.getvalue())
             file_name = uploaded_file.name
 
-        # Load document and split it into chunks for efficient retrieval.
-        documents = load_document(temp_file)
+        # # Load document and split it into chunks for efficient retrieval.
+        # documents = load_document(temp_file)
 
         # Message user that document is being processed with time emoji
         st.spinner("Processing document... :watch:")
@@ -84,17 +84,22 @@ if st.button('Search'):
         st.write(":file_folder: | Log of execution:")
 
         # Build the graph
+        # Load document and split it into chunks for efficient retrieval.
+        documents = load_document(temp_file)
+
         graph = build_graph()
         result = graph.invoke({
+            "text": documents,
             "query": question,
             "retrieval_mode": "original",
             "retrieval_budget": 2,
             "retry_count": 1,
             "max_retries": 2,
-            "healing_trace": []
+            "healing_trace":[]
         })
 
 
-        # Print the result
+        # Print the result       
+        st.divider()
         st.subheader("📖 Answer:")
         st.write(result["answer"])

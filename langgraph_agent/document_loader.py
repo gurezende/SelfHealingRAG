@@ -31,7 +31,7 @@ def load_document(pdf):
 
 # Test
 if __name__ == "__main__":
-    pdf = "C:/Users/gurez/OneDrive/Área de Trabalho/Guide_AB_Testing.pdf"
+    pdf = "./Guide_AB_Testing.pdf"
     chunks = load_document(pdf)
 
     print(f"Generated {len(chunks)} chunks from the PDF file.")

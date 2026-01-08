@@ -48,7 +48,7 @@ if __name__ == "__main__":
     display(Image(graph.get_graph().draw_mermaid_png()))
 
     # Load document
-    documents = load_document("C:/Users/gurez/OneDrive/Área de Trabalho/Guide_AB_Testing.pdf")
+    documents = load_document("./Guide_AB_Testing.pdf")
 
     graph.invoke({
         "query": "What is an A/B Test?",
