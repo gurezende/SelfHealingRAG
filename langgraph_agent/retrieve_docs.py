@@ -2,12 +2,13 @@ import os
 import numpy as np
 import json
 import openai
+import streamlit as st
 from openai import OpenAI
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
 from fastembed import TextEmbedding
 from fastembed.rerank.cross_encoder import TextCrossEncoder
-from document_loader import load_document
+from langgraph_agent.document_loader import load_document
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -80,8 +81,8 @@ def embed_docs(text=text):
         ],
     )
 
-    print("Embedding done!")
-    print(f'There are {client.get_collection("test_collection").points_count} points in the collection\n')
+    st.caption("🔢 | Embedding done!")
+    st.caption(f'➡️ | There are {client.get_collection("test_collection").points_count} points in the collection')
 
     return client
 
@@ -99,7 +100,7 @@ def get_doc_answer(docs, query: str, k: int = 2) -> list[str]:
     Returns:
     list[str]: A list of k document descriptions.
     """
-    print("Retrieving nodes")
+    st.caption(":black_circle: | Retrieving nodes")
 
     # Embedding Model
     encoder_name = "sentence-transformers/all-MiniLM-L6-v2"

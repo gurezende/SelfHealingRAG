@@ -1,5 +1,6 @@
 from typing import TypedDict, List
-from retrieve_docs import *
+from langgraph_agent.retrieve_docs import *
+import streamlit as st
 
 # """
 # This script contains the state and nodes for the RAG agent.
@@ -45,7 +46,7 @@ def retrieve_node(state):
 
 # One node generates
 def generate_node(state):
-    print('Generating answer...')
+    st.caption(':robot: | Generating answer...')
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     ai_answer = client.chat.completions.create(
@@ -74,9 +75,9 @@ def score_node(state: RAGState):
     relevant = judge["relevant_docs"]
     sufficient = judge["sufficient_context"]
 
-    print(f"Score: {score}")
-    print(f"Relevant: {relevant}")
-    print(f"Sufficient: {sufficient}")
+    st.caption(f"Score: {score}")
+    st.caption(f"Relevant: {relevant}")
+    st.caption(f"Sufficient: {sufficient}")
 
     # Determine failure reason
     if not relevant:

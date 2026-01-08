@@ -1,8 +1,8 @@
 #%%
-from retrieve_docs import get_doc_answer, embed_docs
-from nodes import *
+from langgraph_agent.retrieve_docs import get_doc_answer, embed_docs
+from langgraph_agent.nodes import *
 from langgraph.graph import StateGraph, END
-from document_loader import load_document
+from langgraph_agent.document_loader import load_document
 
 def build_graph():
 
@@ -36,30 +36,29 @@ def build_graph():
 
     # Compile the graph
     return builder.compile()
-    
 
-# Create the graph image and save png
-from IPython.display import display, Image
-graph = build_graph()
-display(Image(graph.get_graph().draw_mermaid_png()))
 
 # %%
 
-# Load document
-documents = load_document("C:/Users/gurez/OneDrive/Área de Trabalho/Guide_AB_Testing.pdf")
+if __name__ == "__main__":
 
-graph.invoke({
-    "query": "What is an A/B Test?",
-    "retrieved_docs": [],
-    "retrieval_mode": "original",
-    "retrieval_budget": 2,
-    "failure_reason": "",
-    "healing_trace": [],
-    "answer": "",
-    "score": "",
-    "retry_count": 1,
-    "max_retries": 2
+    # Create the graph image and save png
+    from IPython.display import display, Image
+    graph = build_graph()
+    display(Image(graph.get_graph().draw_mermaid_png()))
+
+    # Load document
+    documents = load_document("C:/Users/gurez/OneDrive/Área de Trabalho/Guide_AB_Testing.pdf")
+
+    graph.invoke({
+        "query": "What is an A/B Test?",
+        "retrieved_docs": [],
+        "retrieval_mode": "original",
+        "retrieval_budget": 2,
+        "failure_reason": "",
+        "healing_trace": [],
+        "answer": "",
+        "score": "",
+        "retry_count": 1,
+        "max_retries": 2
 })
-
-
-# %%
