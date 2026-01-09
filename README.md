@@ -129,7 +129,9 @@ It returns structured JSON:
 
 This output directly controls the agent’s next action.
 
-🧾 State Managed by the Agent
+## 🧾 State Managed by the Agent
+
+```python
 class RAGState(TypedDict):
     text: List[str]
     query: str
@@ -142,6 +144,7 @@ class RAGState(TypedDict):
     retry_count: int
     max_retries: int
     healing_trace: List[str]
+```
 
 This explicit state design makes the system:
 
