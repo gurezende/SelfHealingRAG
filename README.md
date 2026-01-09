@@ -57,6 +57,9 @@ Should Retry?
         ↓
    Retrieve Again (Improved)
 ```
+## Graph Visualization
+
+![graph](img/graph_viz.png)
 
 ## 🧠 Failure Modes Detected
 
