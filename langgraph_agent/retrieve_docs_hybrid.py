@@ -5,21 +5,6 @@ from fastembed import TextEmbedding, LateInteractionTextEmbedding, SparseTextEmb
 from fastembed.rerank.cross_encoder import TextCrossEncoder
 
 
-# Text
-# text = [
-#     "In deep learning, the transformer is an artificial neural network architecture based on the multi-head attention mechanism, in which text is converted to numerical representations called tokens, and each token is converted into a vector via lookup from a word embedding table.", 
-#     "At each layer, each token is then contextualized within the scope of the context window with other (unmasked) tokens via a parallel multi-head attention mechanism, allowing the signal for key tokens to be amplified and less important tokens to be diminished.",
-#     "Transformers have the advantage of having no recurrent units, therefore requiring less training time than earlier recurrent neural architectures (RNNs) such as long short-term memory (LSTM)."
-#     "Later variations have been widely adopted for training large language models (LLMs) on large (language) datasets.",
-#     "The modern version of the transformer was proposed in the 2017 paper 'Attention Is All You Need' by researchers at Google.",
-#     "The predecessors of transformers were developed as an improvement over previous architectures for machine translation, but have found many applications since.",
-#     "They are used in large-scale natural language processing, computer vision (vision transformers), reinforcement learning,[6][7] audio,[8] multimodal learning, robotics,[9] and even playing chess.[10] It has also led to the development of pre-trained systems, such as generative pre-trained transformers (GPTs)[11] and BERT[12] (bidirectional encoder representations from transformers).",
-#     "Transformers are the foundational neural network architecture enabling modern Large Language Models (LLMs) like ChatGPT, allowing them to process sequences of text efficiently using a self-attention mechanism to weigh word importance, leading to deep contextual understanding for tasks like text generation, translation, and summarization, essentially powering AI's ability to understand and create human-like language.",
-#     "LLMs use stacked transformer blocks (encoders/decoders) to predict the next word by understanding context from vast datasets, making them powerful tools for complex NLP applications.",
-#     "The transformer model is a type of neural network architecture that excels at processing sequential data, most prominently associated with large language models (LLMs).",
-#     "Transformer models have also achieved elite performance in other fields of artificial intelligence (AI), such as computer vision, speech recognition and time series forecasting."
-# ]
-
 def initialize_models():
     "Initialize the three embedding models for Hybrid search"
     print("Initializing models...")
@@ -162,6 +147,21 @@ def get_doc_answer(docs, query: str, k: int = 3) -> list[str]:
 
 if __name__ == "__main__":
     
+    # Sample Text
+    text = [
+        "In deep learning, the transformer is an artificial neural network architecture based on the multi-head attention mechanism, in which text is converted to numerical representations called tokens, and each token is converted into a vector via lookup from a word embedding table.", 
+        "At each layer, each token is then contextualized within the scope of the context window with other (unmasked) tokens via a parallel multi-head attention mechanism, allowing the signal for key tokens to be amplified and less important tokens to be diminished.",
+        "Transformers have the advantage of having no recurrent units, therefore requiring less training time than earlier recurrent neural architectures (RNNs) such as long short-term memory (LSTM)."
+        "Later variations have been widely adopted for training large language models (LLMs) on large (language) datasets.",
+        "The modern version of the transformer was proposed in the 2017 paper 'Attention Is All You Need' by researchers at Google.",
+        "The predecessors of transformers were developed as an improvement over previous architectures for machine translation, but have found many applications since.",
+        "They are used in large-scale natural language processing, computer vision (vision transformers), reinforcement learning,[6][7] audio,[8] multimodal learning, robotics,[9] and even playing chess.[10] It has also led to the development of pre-trained systems, such as generative pre-trained transformers (GPTs)[11] and BERT[12] (bidirectional encoder representations from transformers).",
+        "Transformers are the foundational neural network architecture enabling modern Large Language Models (LLMs) like ChatGPT, allowing them to process sequences of text efficiently using a self-attention mechanism to weigh word importance, leading to deep contextual understanding for tasks like text generation, translation, and summarization, essentially powering AI's ability to understand and create human-like language.",
+        "LLMs use stacked transformer blocks (encoders/decoders) to predict the next word by understanding context from vast datasets, making them powerful tools for complex NLP applications.",
+        "The transformer model is a type of neural network architecture that excels at processing sequential data, most prominently associated with large language models (LLMs).",
+        "Transformer models have also achieved elite performance in other fields of artificial intelligence (AI), such as computer vision, speech recognition and time series forecasting."
+    ]
+
     query= "nothing to see here"
 
     embedded_docs = embed_docs(documents=text)
