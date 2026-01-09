@@ -135,10 +135,11 @@ def retry_node(state: RAGState):
     # Print and return
     trace_for_log = str(trace[-1])
     st.caption(f"Healing trace: {trace_for_log}")
-    
+
     return {"healing_trace": trace}
 
 
 # One node for retry count
 def retry_count_node(state):
+    st.markdown(f"* 🔄 | Retry count: {state['retry_count'] + 1}")
     return {"retry_count": state["retry_count"] + 1}

@@ -43,8 +43,10 @@ with st.sidebar:
             file.write(uploaded_file.getvalue())
             file_name = uploaded_file.name
 
-        # # Load document and split it into chunks for efficient retrieval.
-        # documents = load_document(temp_file)
+        # Maximum number of retries
+        max_retries = st.pills("Maximum number of retries for the RAG Self-Healing",
+                               options=[1, 2, 3, 4, 5],
+                               default=2)
 
         # Message user that document is being processed with time emoji
         st.spinner("Processing document... :watch:")
@@ -93,8 +95,8 @@ if st.button('Search'):
             "query": question,
             "retrieval_mode": "original",
             "retrieval_budget": 2,
-            "retry_count": 1,
-            "max_retries": 2,
+            "retry_count": 0,
+            "max_retries": max_retries,
             "healing_trace":[]
         })
 
